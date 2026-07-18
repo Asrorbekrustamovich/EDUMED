@@ -17,12 +17,21 @@ export function renderLogin(state, icons) {
           <div id="login-error" class="text-danger text-sm mb-3 font-semibold" style="display:none"></div>
           
           <div class="input-group">
-            <label>Elektron pochta</label>
-            <input type="email" id="login-email" class="input" placeholder="ism@universitet.edu">
+            <label>Foydalanuvchi ismi</label>
+            <input type="text" id="login-username" class="input" autocomplete="off">
           </div>
           <div class="input-group">
             <label>Parol</label>
-            <input type="password" id="login-password" class="input" placeholder="••••••••">
+            <div style="position:relative;">
+              <input type="password" id="login-password" class="input" placeholder="••••••••" style="padding-right:44px;">
+              <button type="button" onclick="window.togglePassword('login-password', 'login-eye')" tabindex="-1"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;display:flex;align-items:center;">
+                <svg id="login-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
           </div>
           
           <div class="auth-row">
@@ -78,16 +87,24 @@ export function renderRegister(state, icons) {
           </div>
           
           <div class="input-group">
-            <label>F.I.Sh</label>
-            <input type="text" id="reg-name" class="input" placeholder="Ism Familiya">
+            <label>Foydalanuvchi ismi</label>
+            <input type="text" id="reg-name" class="input" autocomplete="off">
           </div>
-          <div class="input-group">
-            <label>Elektron pochta</label>
-            <input type="email" id="reg-email" class="input" placeholder="ism@universitet.edu">
+          <div class="input-group" style="display:none;">
+            <input type="text" id="reg-username" autocomplete="off">
           </div>
           <div class="input-group">
             <label>Parol</label>
-            <input type="password" id="reg-password" class="input" placeholder="Kamida 8 belgi">
+            <div style="position:relative;">
+              <input type="password" id="reg-password" class="input" placeholder="Kamida 8 belgi" style="padding-right:44px;">
+              <button type="button" onclick="window.togglePassword('reg-password', 'reg-eye')" tabindex="-1"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;display:flex;align-items:center;">
+                <svg id="reg-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
           </div>
           
           <label class="checkbox-group mt-4 mb-4">

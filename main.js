@@ -114,6 +114,23 @@ window.alert = function(msg) {
   window.showToast(msg);
 };
 
+// Toggle password visibility
+window.togglePassword = function(inputId, eyeId) {
+  const input = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  if (!input || !eye) return;
+
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+
+  // Eye open (visible) icon
+  const eyeOpen = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  // Eye closed (hidden) icon
+  const eyeClosed = `<line x1="1" y1="1" x2="23" y2="23"/><path d="M10.58 10.58A3 3 0 0 0 14.41 14.41M9.88 9.88a3 3 0 0 1 4.23 4.23"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 7 11 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.526 13.526 0 0 0 1 12s4 7 11 7a9.74 9.74 0 0 0 5.39-1.61"/>`;
+
+  eye.innerHTML = isHidden ? eyeClosed : eyeOpen;
+};
+
 // App State
 const state = {
   currentPage: 'landing',
@@ -497,12 +514,12 @@ window.loadUserProfile = async function() {
 
 // Auth Functions
 window.handleLogin = async function() {
-  const email = document.getElementById('login-email').value;
+  const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
   const btn = document.getElementById('login-btn');
   
-  if(!email || !password) {
+  if(!username || !password) {
     errorEl.innerText = "Barcha maydonlarni to'ldiring";
     errorEl.style.display = "block";
     return;
@@ -516,7 +533,7 @@ window.handleLogin = async function() {
     const res = await fetch(`${API}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ username, password })
     });
     const data = await res.json();
     
@@ -546,22 +563,21 @@ window.selectRegRole = function(role) {
 };
 
 window.handleRegister = async function() {
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
+  // reg-name is used as both display name and username (single field)
+  const username = document.getElementById('reg-name').value.trim();
   const password = document.getElementById('reg-password').value;
   const terms = document.getElementById('reg-terms').checked;
   const errorEl = document.getElementById('register-error');
   const btn = document.getElementById('reg-btn');
   
-  if(!name || !email || !password) {
+  if(!username || !password) {
     errorEl.innerText = "Barcha maydonlarni to'ldiring";
     errorEl.style.display = "block";
     return;
   }
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    errorEl.innerText = "Yaroqli elektron pochta manzilini kiriting (masalan: ism@universitet.edu)";
+
+  if (username.includes('@')) {
+    errorEl.innerText = "Foydalanuvchi ismi @ belgisisiz bo'lishi kerak";
     errorEl.style.display = "block";
     return;
   }
@@ -580,7 +596,7 @@ window.handleRegister = async function() {
     const res = await fetch(`${API}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, role: window.selectedRegRole, university: 'TMA' })
+      body: JSON.stringify({ name: username, username, password, role: window.selectedRegRole, university: 'TMA' })
     });
     const data = await res.json();
     

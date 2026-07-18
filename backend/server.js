@@ -44,12 +44,22 @@ app.use(express.json());
 // --- AUTH ROUTES ---
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { name, email, password, role, university } = req.body;
-    
+    const { name, username, email: emailField, password, role, university } = req.body;
+
+    // Support both username (new) and email (old) fields
+    // If username provided, convert to internal email format for storage
+    let storedEmail;
+    if (username) {
+      // If username contains @, use it directly; otherwise append domain
+      storedEmail = username.includes('@') ? username : `${username}@edumed.local`;
+    } else {
+      storedEmail = emailField;
+    }
+
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findUnique({ where: { email: storedEmail } });
     if (existingUser) {
-      return res.status(400).json({ error: "Ushbu email bilan foydalanuvchi mavjud" });
+      return res.status(400).json({ error: "Bu foydalanuvchi ismi band, boshqa ism tanlang" });
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -57,7 +67,7 @@ app.post('/api/auth/register', async (req, res) => {
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: storedEmail,
         password: hashedPassword,
         role: role || 'student',
         university: university || 'TMA',
@@ -76,13 +86,28 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) return res.status(400).json({ error: "Email yoki parol xato" });
+    const { username, email: emailField, password } = req.body;
+
+    let user = null;
+
+    if (username) {
+      // New username-based login
+      // Try direct match first (existing email accounts: admin@edumed.uz etc.)
+      user = await prisma.user.findUnique({ where: { email: username } });
+      // If not found, try with @edumed.local suffix (new username-based accounts)
+      if (!user) {
+        const converted = username.includes('@') ? username : `${username}@edumed.local`;
+        user = await prisma.user.findUnique({ where: { email: converted } });
+      }
+    } else {
+      // Legacy email-based login (backward compatibility)
+      user = await prisma.user.findUnique({ where: { email: emailField } });
+    }
+
+    if (!user) return res.status(400).json({ error: "Foydalanuvchi ismi yoki parol xato" });
     
     const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(400).json({ error: "Email yoki parol xato" });
+    if (!validPassword) return res.status(400).json({ error: "Foydalanuvchi ismi yoki parol xato" });
     
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     
